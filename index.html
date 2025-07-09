@@ -3,124 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriSync - Synchronise ta nutrition avec tes objectifs</title>
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="description" content="NutriSync - Application de suivi nutritionnel avec intelligence artificielle">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    
+    <title>NutriSync - Suivi Nutritionnel Intelligent</title>
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Container principal -->
     <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">🥗</div>
-            <div>
-                <h1>NutriSync</h1>
-                <div class="header-subtitle">Synchronise ta nutrition avec tes objectifs</div>
+        
+        <!-- En-tête -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">🥗</div>
+                <div>
+                    <h1>NutriSync</h1>
+                    <p class="header-subtitle">Suivi nutritionnel intelligent</p>
+                </div>
             </div>
             <div class="sync-badge" id="syncBadge" onclick="toggleSyncInfo()">
-                ✓ <span id="syncStatus">Données synchronisées</span>
+                <span>✓</span>
+                <span id="syncStatus">Synchronisé</span>
             </div>
-        </div>
+        </header>
 
-        <!-- Sync Info Box -->
+        <!-- Info de synchronisation -->
         <div class="sync-info-box" id="syncInfoBox">
-            <h3>🔄 Synchronisation NutriSync</h3>
-            <p>Utilisez ce code sur n'importe quel appareil pour retrouver vos données :</p>
+            <h3>🔄 Synchronisation Cloud</h3>
+            <p>Utilisez ce code sur n'importe quel appareil :</p>
             <div class="sync-code-container">
                 <div class="sync-code" id="syncCode">NUTRI-XXXXX</div>
                 <button class="copy-btn" onclick="copySyncCode()">📋 Copier</button>
             </div>
-            <p style="font-size: 14px; opacity: 0.9;">
-                💡 Gardez ce code secret ! Il donne accès à toutes vos données.
-            </p>
-            <button class="btn" style="background: rgba(255,255,255,0.2); color: white; margin-top: 10px;" onclick="showSyncModal()">
-                🔗 J'ai déjà un code
-            </button>
+            <button class="btn" onclick="showSyncModal()">🔗 J'ai déjà un code</button>
         </div>
 
         <!-- Navigation -->
         <nav class="nav-bar">
-            <div class="nav-item active" onclick="showPage('dashboard')">
+            <a href="#dashboard" class="nav-item active" onclick="showPage('dashboard')">
                 🏠 Dashboard
-            </div>
-            <div class="nav-item" onclick="showPage('profile')">
+            </a>
+            <a href="#profile" class="nav-item" onclick="showPage('profile')">
                 👤 Profil
-            </div>
-            <div class="nav-item" onclick="showPage('foods')">
+            </a>
+            <a href="#foods" class="nav-item" onclick="showPage('foods')">
                 🍽️ Aliments
-            </div>
-            <div class="nav-item" onclick="showPage('analytics')">
+            </a>
+            <a href="#analytics" class="nav-item" onclick="showPage('analytics')">
                 📊 Analytics
-            </div>
-            <div class="nav-item" onclick="showPage('ai-coach')">
-                💬 IA Coach
-            </div>
-            <div class="nav-item" onclick="showPage('planning')">
+            </a>
+            <a href="#ai-coach" class="nav-item" onclick="showPage('ai-coach')">
+                🤖 IA Coach
+            </a>
+            <a href="#planning" class="nav-item" onclick="showPage('planning')">
                 📅 Planning
-            </div>
-            <div class="nav-item" onclick="showPage('courses')">
+            </a>
+            <a href="#shopping" class="nav-item" onclick="showPage('shopping')">
                 🛒 Courses
-            </div>
-            <div class="nav-item" onclick="showPage('settings')">
+            </a>
+            <a href="#settings" class="nav-item" onclick="showPage('settings')">
                 ⚙️ Paramètres
-            </div>
+            </a>
         </nav>
 
-        <!-- Content -->
+        <!-- Contenu principal -->
         <div class="content">
-            <!-- Dashboard Page -->
+            
+            <!-- Page Dashboard -->
             <div id="dashboard" class="page-section active">
                 <h2 class="page-title">Dashboard - <span id="currentDate"></span></h2>
 
-                <!-- Stat Cards -->
+                <!-- Cartes objectifs -->
                 <div class="stat-cards">
-                    <div class="stat-card active" onclick="setGoal('cut')">
+                    <div class="stat-card active" onclick="selectGoal('cut')">
                         <div class="stat-icon">🔥</div>
                         <div class="stat-title">Cut</div>
                         <div class="stat-subtitle">Perte de gras</div>
                     </div>
-                    <div class="stat-card" onclick="setGoal('bulk')">
+                    <div class="stat-card" onclick="selectGoal('bulk')">
                         <div class="stat-icon">💪</div>
                         <div class="stat-title">Bulk</div>
                         <div class="stat-subtitle">Prise de masse</div>
                     </div>
-                    <div class="stat-card" onclick="setGoal('maintenance')">
+                    <div class="stat-card" onclick="selectGoal('maintenance')">
                         <div class="stat-icon">⚖️</div>
                         <div class="stat-title">Maintenance</div>
                         <div class="stat-subtitle">Maintien</div>
                     </div>
-                    <div class="stat-card" onclick="setGoal('recomp')">
+                    <div class="stat-card" onclick="selectGoal('recomp')">
                         <div class="stat-icon">🎯</div>
                         <div class="stat-title">Recomp</div>
                         <div class="stat-subtitle">Recomposition</div>
                     </div>
                 </div>
 
-                <!-- AI Prediction -->
+                <!-- Prédiction IA -->
                 <div class="ai-prediction">
-                    <h3>✨ Prédiction IA basée sur vos données</h3>
+                    <h3>✨ Prédiction IA</h3>
                     <p>Avec vos habitudes actuelles, vous devriez atteindre votre objectif dans <strong>12 semaines</strong>.</p>
                     <div class="tip">
-                        💡 <span><strong>Conseil du jour:</strong> Augmentez votre apport en protéines de 10g pour optimiser la perte de gras tout en préservant la masse musculaire.</span>
+                        💡 <strong>Conseil :</strong> Augmentez votre apport en protéines de 10g pour optimiser vos résultats.
                     </div>
                 </div>
 
-                <!-- Hydration Tracker -->
+                <!-- Hydratation -->
                 <div class="hydration-section">
                     <div class="hydration-header">
-                        <h3>💧 Hydratation (25cl/verre) :</h3>
+                        <h3>💧 Hydratation</h3>
                         <button class="reset-btn" onclick="resetHydration()">Reset</button>
                     </div>
                     <div class="hydration-glasses" id="hydrationGlasses">
-                        <!-- Glasses will be generated by JavaScript -->
+                        <!-- Les verres seront générés ici -->
                     </div>
-                    <p style="color: #666; font-size: 14px;">
-                        <span id="hydrationStatus">0/8 verres = 0cl</span> / 200cl objectif<br>
-                        Cliquez sur les verres pour suivre votre hydratation
-                    </p>
+                    <p id="hydrationStatus">0/8 verres = 0cl / 200cl</p>
                 </div>
 
-                <!-- Nutrition Dashboard -->
+                <!-- Tableau nutritionnel -->
                 <div class="nutrition-dashboard">
-                    <h3 style="margin-bottom: 20px;">🍔 Tableau de bord nutritionnel</h3>
+                    <h3>📊 Nutrition du jour</h3>
                     <div class="nutrition-stats">
                         <div class="nutrition-stat">
                             <h2 id="consumedCalories">0</h2>
@@ -139,6 +145,7 @@
                             <p>Métabolisme</p>
                         </div>
                     </div>
+
                     <div class="progress-bars">
                         <div>
                             <div class="progress-item">
@@ -146,7 +153,7 @@
                                 <span id="caloriesProgress">0 / 1836</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" id="caloriesBar" style="width: 0%"></div>
+                                <div class="progress-fill" id="caloriesBar"></div>
                             </div>
                         </div>
                         <div>
@@ -155,7 +162,7 @@
                                 <span id="proteinsProgress">0g / 138g</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" id="proteinsBar" style="width: 0%"></div>
+                                <div class="progress-fill" id="proteinsBar"></div>
                             </div>
                         </div>
                         <div>
@@ -164,46 +171,47 @@
                                 <span id="hydrationProgress">0cl / 200cl</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" id="hydrationBar" style="width: 0%"></div>
+                                <div class="progress-fill" id="hydrationBar"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Cards -->
+                <!-- Cartes d'action -->
                 <div class="action-cards">
                     <div class="action-card green" onclick="showPage('planning')">
                         <div class="action-card-icon">📅</div>
-                        <h3>Planning Repas IA</h3>
-                        <p>Semaine générée auto</p>
+                        <h3>Planning Repas</h3>
+                        <p>Généré par IA</p>
                     </div>
-                    <div class="action-card blue" onclick="showPage('courses')">
+                    <div class="action-card blue" onclick="showPage('shopping')">
                         <div class="action-card-icon">🛒</div>
-                        <h3>Liste de Courses</h3>
-                        <p>Générée du planning</p>
+                        <h3>Liste Courses</h3>
+                        <p>Depuis planning</p>
                     </div>
                     <div class="action-card pink" onclick="showPage('ai-coach')">
                         <div class="action-card-icon">🤖</div>
                         <h3>Coach IA</h3>
-                        <p>Conseils personnalisés</p>
+                        <p>Conseils perso</p>
                     </div>
                 </div>
 
-                <!-- Today's Meals -->
-                <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 20px;">Repas d'aujourd'hui</h3>
-                    <div id="todaysMeals" class="empty-state">
-                        <p>Aucun repas ajouté aujourd'hui</p>
-                        <button class="btn btn-primary" style="margin-top: 20px;" onclick="showPage('foods')">
+                <!-- Repas du jour -->
+                <div class="today-meals">
+                    <h3>🍽️ Repas d'aujourd'hui</h3>
+                    <div id="todayMeals" class="empty-state">
+                        <p>Aucun repas ajouté</p>
+                        <button class="btn btn-primary" onclick="showPage('foods')">
                             Ajouter un repas
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Profile Page -->
+            <!-- Page Profil -->
             <div id="profile" class="page-section">
-                <h2 class="page-title">Profil et Objectifs</h2>
+                <h2 class="page-title">Profil & Objectifs</h2>
+
                 <div class="profile-form">
                     <div class="form-group">
                         <label>Sexe</label>
@@ -212,18 +220,22 @@
                             <option value="femme">Femme</option>
                         </select>
                     </div>
+
                     <div class="form-group">
-                        <label>Âge (années)</label>
+                        <label>Âge</label>
                         <input type="number" id="age" value="31" min="1" max="120">
                     </div>
+
                     <div class="form-group">
                         <label>Taille (cm)</label>
                         <input type="number" id="height" value="180" min="100" max="250">
                     </div>
+
                     <div class="form-group">
-                        <label>Poids actuel (kg)</label>
+                        <label>Poids (kg)</label>
                         <input type="number" id="weight" value="96" min="30" max="300" step="0.1">
                     </div>
+
                     <div class="form-group">
                         <label>Objectif</label>
                         <select id="goal">
@@ -234,389 +246,339 @@
                             <option value="bulk">Prise rapide (+1kg/semaine)</option>
                         </select>
                     </div>
+
                     <div class="form-group">
-                        <label>Niveau d'activité physique</label>
+                        <label>Niveau d'activité</label>
                         <select id="activity">
                             <option value="sedentary">Sédentaire</option>
-                            <option value="light">Légèrement actif (exercice léger 1-3x/semaine)</option>
-                            <option value="moderate">Modérément actif (3-5x/semaine)</option>
-                            <option value="active">Très actif (6-7x/semaine)</option>
-                            <option value="athlete">Athlète (2x par jour)</option>
+                            <option value="light">Légèrement actif</option>
+                            <option value="moderate">Modérément actif</option>
+                            <option value="active">Très actif</option>
+                            <option value="athlete">Athlète</option>
                         </select>
                     </div>
 
                     <div class="slider-container">
-                        <label>Répartition des protéines (<span id="proteinPercent">30</span>%)</label>
+                        <label>Protéines (<span id="proteinPercent">30</span>%)</label>
                         <input type="range" id="proteinSlider" min="15" max="45" value="30" oninput="updateMacros()">
-                        <div class="macro-recommendation">
-                            <h4>💪 Recommandations musculation :</h4>
-                            <ul>
-                                <li>• Débutant : 25-30% (1.6-2g/kg)</li>
-                                <li>• Intermédiaire : 30-35% (2-2.5g/kg)</li>
-                                <li>• Avancé/Compétition : 35-45% (2.5-3g/kg)</li>
-                            </ul>
-                        </div>
                     </div>
 
                     <div class="slider-container">
-                        <label>Répartition des lipides (<span id="fatPercent">25</span>%)</label>
+                        <label>Lipides (<span id="fatPercent">25</span>%)</label>
                         <input type="range" id="fatSlider" min="15" max="40" value="25" oninput="updateMacros()">
-                        <div class="alert alert-warning">
-                            ⚠️ <strong>Attention :</strong> Les glucides ne doivent pas descendre trop bas<br>
-                            • Minimum recommandé : 20-25% pour l'énergie<br>
-                            • Si <20% : Risque de fatigue et baisse de performance
-                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Répartition des glucides</label>
-                        <p style="font-size: 24px; font-weight: bold; color: #7c3aed;">
-                            <span id="carbPercent">45</span>% (calculé automatiquement)
+                        <label>Glucides</label>
+                        <p style="font-size: 36px; font-weight: bold;">
+                            <span id="carbPercent">45</span>%
                         </p>
                     </div>
 
-                    <div class="quick-calc">
-                        <h4>🎯 Calcul rapide protéines pour musculation</h4>
-                        <div class="calc-input-group">
-                            <input type="number" id="proteinPerKg" value="2.2" min="0" max="5" step="0.1" style="width: 100px;">
-                            <span>g de protéines par kg de poids corporel</span>
-                            <button class="btn btn-success" onclick="calculateProteinRatio()">Calculer ratio %</button>
-                        </div>
-                        <div class="calc-result" id="proteinRatioResult">
-                            Résultat : 46% de protéines
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 15px; margin-top: 30px;">
-                        <button class="btn btn-primary" style="flex: 1;" onclick="calculateNeeds()">
-                            Calculer mes besoins
-                        </button>
-                        <button class="btn btn-success" style="flex: 1;" onclick="saveProfile()">
-                            Sauvegarder le profil
-                        </button>
-                    </div>
+                    <button class="btn btn-primary" onclick="calculateNeeds()">
+                        Calculer mes besoins
+                    </button>
+                    <button class="btn btn-success" onclick="saveProfile()">
+                        Sauvegarder
+                    </button>
                 </div>
             </div>
 
-            <!-- Foods Page -->
+            <!-- Page Aliments -->
             <div id="foods" class="page-section">
-                <h2 class="page-title">🔍 Recherche d'aliments</h2>
-                <p style="color: #666; margin-bottom: 20px;">
-                    Base de données Open Food Facts France • Plus de 2 millions de produits français
-                </p>
+                <h2 class="page-title">🍽️ Gestion des Aliments</h2>
 
-                <div style="margin-bottom: 30px;">
-                    <p style="font-weight: 500; margin-bottom: 15px;">Sélectionnez le type de repas :</p>
-                    <div class="meal-selector">
-                        <div class="meal-btn active" onclick="selectMealType('breakfast', event)">
-                            <span style="font-size: 24px;">🥐</span>
-                            <span>Petit-déjeuner</span>
-                        </div>
-                        <div class="meal-btn" onclick="selectMealType('lunch', event)">
-                            <span style="font-size: 24px;">🍝</span>
-                            <span>Déjeuner</span>
-                        </div>
-                        <div class="meal-btn" onclick="selectMealType('snack', event)">
-                            <span style="font-size: 24px;">🍓</span>
-                            <span>Collation</span>
-                        </div>
-                        <div class="meal-btn" onclick="selectMealType('dinner', event)">
-                            <span style="font-size: 24px;">🍖</span>
-                            <span>Dîner</span>
-                        </div>
+                <div class="meal-selector">
+                    <div class="meal-btn active">
+                        <span>🥐</span>
+                        <span>Petit-déjeuner</span>
+                    </div>
+                    <div class="meal-btn">
+                        <span>🍝</span>
+                        <span>Déjeuner</span>
+                    </div>
+                    <div class="meal-btn">
+                        <span>🍓</span>
+                        <span>Collation</span>
+                    </div>
+                    <div class="meal-btn">
+                        <span>🍖</span>
+                        <span>Dîner</span>
                     </div>
                 </div>
 
                 <div class="search-container">
-                    <input type="text" class="search-input" id="foodSearchInput" placeholder="Rechercher un aliment français">
-                    <button class="btn btn-primary" onclick="searchOpenFoodFacts()">🔍</button>
-                    <button class="scan-btn" onclick="showSuccess('Scanner de code-barres (nécessite API caméra)')">📸 Scanner</button>
+                    <input type="text" id="foodSearchInput" class="search-input" placeholder="Rechercher un aliment...">
+                    <button class="btn btn-primary" onclick="searchFood()">🔍</button>
+                    <button class="scan-btn" onclick="startBarcodeScanner()">📸 Scanner</button>
                 </div>
 
-                <!-- Search Results -->
-                <div id="searchResults" style="display: none; margin-top: 20px;">
-                    <h3>Résultats de recherche</h3>
-                    <div id="searchResultsList">
-                        <!-- Results will be displayed here -->
+                <div id="searchResults" style="display: none;">
+                    <h3>Résultats</h3>
+                    <div id="searchResultsList"></div>
+                </div>
+
+                <div class="photo-analysis">
+                    <h3>📸 Analyse Photo IA</h3>
+                    <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                        <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="analyzeFood(event)">
+                        <p>📷 Cliquez pour analyser une photo</p>
                     </div>
                 </div>
 
-                <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
-                    <h4 style="color: #1976d2; margin-bottom: 10px;">➕ Ajouter un aliment personnalisé</h4>
-                    <button class="btn btn-primary" onclick="showAddFoodModal()">
-                        Ajouter manuellement un aliment
-                    </button>
-                </div>
-
-                <!-- Barcode Scanner -->
-                <div style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 10px;">📱 Scanner de Code-barres</h3>
-                    <p style="margin-bottom: 20px;">Scannez le code-barres d'un produit pour l'ajouter instantanément</p>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <input type="text" id="barcodeInput" placeholder="Entrez le code-barres" style="flex: 1; min-width: 200px; color: #333;">
-                        <button class="btn" style="background: white; color: #ff5722;" onclick="searchByBarcode()">
-                            Rechercher
-                        </button>
-                    </div>
-                </div>
+                <button class="btn btn-primary" onclick="showAddFoodModal()">
+                    ➕ Ajouter manuellement
+                </button>
             </div>
 
-            <!-- Analytics Page -->
+            <!-- Page Analytics -->
             <div id="analytics" class="page-section">
                 <h2 class="page-title">📊 Analytics</h2>
-                
-                <!-- Data Summary -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                    <div style="background: #2196f3; color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                        <h2 style="font-size: 48px; margin-bottom: 10px;" id="totalMeals">0</h2>
-                        <p style="font-size: 18px;">Repas enregistrés</p>
+
+                <div class="analytics-cards">
+                    <div class="analytics-card">
+                        <h3>-2.8kg</h3>
+                        <p>Progression totale</p>
                     </div>
-                    <div style="background: #4caf50; color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                        <h2 style="font-size: 48px; margin-bottom: 10px;" id="avgCalories">0</h2>
-                        <p style="font-size: 18px;">Calories moyennes/jour</p>
+                    <div class="analytics-card">
+                        <h3>87%</h3>
+                        <p>Objectifs atteints</p>
                     </div>
-                    <div style="background: #ff9800; color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                        <h2 style="font-size: 48px; margin-bottom: 10px;" id="streak">0</h2>
-                        <p style="font-size: 18px;">Jours consécutifs</p>
+                    <div class="analytics-card">
+                        <h3>21</h3>
+                        <p>Jours consécutifs</p>
                     </div>
                 </div>
-                
-                <!-- Data Management -->
-                <div style="background: linear-gradient(135deg, #26d0ce 0%, #1a2980 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 15px;">💾 Sauvegarde & Synchronisation</h4>
-                    <p style="margin-bottom: 15px;">Vos données sont automatiquement sauvegardées et synchronisées.</p>
-                    <p style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">Code de sync : <strong id="analyticsCode">NUTRI-XXXXX</strong></p>
-                    <p style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-bottom: 20px;">
-                        🔄 Dernière synchronisation : <span id="lastSyncTime">Il y a quelques secondes</span>
-                    </p>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <button class="btn" style="background: rgba(255,255,255,0.2); color: white;" onclick="exportData()">
-                            📥 Exporter les données
-                        </button>
-                        <button class="btn" style="background: rgba(255,255,255,0.2); color: white;" onclick="importData()">
-                            📤 Importer les données
-                        </button>
-                        <button class="btn" style="background: rgba(255,255,255,0.2); color: white;" onclick="forceSync()">
-                            ☁️ Forcer la sync
-                        </button>
-                        <button class="btn" style="background: rgba(255,0,0,0.2); color: white;" onclick="resetData()">
-                            🔄 Réinitialiser
-                        </button>
+
+                <div class="weight-tracking">
+                    <h3>📈 Évolution du poids</h3>
+                    <canvas id="weightChart" width="400" height="200"></canvas>
+                    <div class="weight-input">
+                        <input type="number" id="newWeight" placeholder="Poids actuel (kg)" step="0.1">
+                        <button class="btn btn-success" onclick="addWeightEntry()">Ajouter</button>
                     </div>
+                </div>
+
+                <div class="export-section">
+                    <h3>📤 Export des données</h3>
+                    <button class="btn btn-primary" onclick="exportPDF()">📄 PDF</button>
+                    <button class="btn btn-primary" onclick="exportCSV()">📊 CSV</button>
+                    <button class="btn btn-primary" onclick="exportJSON()">🔧 JSON</button>
                 </div>
             </div>
 
-            <!-- AI Coach Page -->
+            <!-- Page IA Coach -->
             <div id="ai-coach" class="page-section">
-                <h2 class="page-title">Assistant IA Nutritionnel</h2>
-                <p style="color: #666; margin-bottom: 20px;">Coach nutritionnel personnalisé basé sur vos données</p>
+                <h2 class="page-title">🤖 Assistant IA</h2>
 
                 <div class="chat-container">
                     <div class="chat-messages" id="chatMessages">
                         <div class="chat-message ai">
                             <p><strong>🤖 Coach IA</strong></p>
-                            <p>Bonjour ! Je suis votre coach nutritionnel IA personnel. Comment puis-je vous aider aujourd'hui ?</p>
+                            <p>Bonjour ! Comment puis-je vous aider aujourd'hui ?</p>
                         </div>
                     </div>
                     <div class="chat-input-container">
-                        <input type="text" class="chat-input" id="chatInput" placeholder="Posez votre question nutritionnelle...">
-                        <button class="chat-send-btn" onclick="sendMessage()">
-                            ➤
-                        </button>
+                        <input type="text" id="chatInput" class="chat-input" placeholder="Posez votre question...">
+                        <button class="chat-send-btn" onclick="sendMessage()">➤</button>
                     </div>
                 </div>
 
-                <div style="margin-top: 40px; background: #f5f5f5; padding: 30px; border-radius: 15px;">
-                    <h3 style="margin-bottom: 20px;">🔍 Questions suggérées</h3>
-                    <div style="display: grid; gap: 10px;">
-                        <button class="btn" style="background: white; color: #333; justify-content: flex-start;" onclick="askQuestion('Quels aliments privilégier pour mon objectif ?')">
-                            💡 Quels aliments privilégier pour mon objectif ?
-                        </button>
-                        <button class="btn" style="background: white; color: #333; justify-content: flex-start;" onclick="askQuestion('Comment optimiser ma récupération musculaire ?')">
-                            💪 Comment optimiser ma récupération musculaire ?
-                        </button>
-                        <button class="btn" style="background: white; color: #333; justify-content: flex-start;" onclick="askQuestion('Quel est le meilleur moment pour consommer des protéines ?')">
-                            ⏰ Quel est le meilleur moment pour consommer des protéines ?
-                        </button>
-                        <button class="btn" style="background: white; color: #333; justify-content: flex-start;" onclick="askQuestion('Comment éviter les plateaux de perte de poids ?')">
-                            📉 Comment éviter les plateaux de perte de poids ?
-                        </button>
-                    </div>
+                <div class="quick-questions">
+                    <button class="btn" onclick="askQuestion('Analyse mes progrès')">📊 Analyser progrès</button>
+                    <button class="btn" onclick="askQuestion('Suggère un repas')">🍽️ Suggestion repas</button>
+                    <button class="btn" onclick="askQuestion('Plan entraînement')">💪 Plan sport</button>
                 </div>
             </div>
 
-            <!-- Planning Page -->
+            <!-- Page Planning -->
             <div id="planning" class="page-section">
-                <h2 class="page-title">📅 Planification Repas IA</h2>
-                
-                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 40px; border-radius: 20px; text-align: center;">
-                    <h3 style="font-size: 24px; margin-bottom: 15px;">🤖 Génération automatique par IA</h3>
-                    <p style="font-size: 16px; opacity: 0.9; margin-bottom: 25px;">
-                        Notre IA génère un planning complet de repas équilibrés adaptés à vos objectifs et préférences.
-                    </p>
-                    <button class="btn" style="background: white; color: #11998e; font-size: 18px; padding: 15px 40px;" onclick="generateWeekPlan()">
-                        ✨ Générer ma semaine
+                <h2 class="page-title">📅 Planning Repas</h2>
+
+                <div class="planning-hero">
+                    <h3>🤖 Génération IA de Planning</h3>
+                    <p>Créez un planning personnalisé basé sur vos objectifs</p>
+                    <button class="btn btn-primary" onclick="generateWeekPlan()">
+                        ✨ Générer mon planning
                     </button>
                 </div>
 
-                <div id="weekPlan" style="margin-top: 30px; display: none;">
-                    <!-- Week plan will be generated here -->
+                <div id="weekPlan" style="display: none;">
+                    <!-- Le planning sera généré ici -->
                 </div>
             </div>
 
-            <!-- Courses Page -->
-            <div id="courses" class="page-section">
+            <!-- Page Courses -->
+            <div id="shopping" class="page-section">
                 <h2 class="page-title">🛒 Liste de Courses</h2>
-                <div class="empty-state">
-                    <div class="empty-state-icon">🛒</div>
-                    <h3>Votre liste de courses apparaîtra ici</h3>
-                    <p>Générez d'abord un planning de repas pour créer votre liste de courses automatiquement</p>
-                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="showPage('planning')">
-                        Créer un planning
+
+                <div class="shopping-hero">
+                    <h3>📝 Génération Automatique</h3>
+                    <p>Créez votre liste depuis votre planning de repas</p>
+                    <button class="btn btn-primary" onclick="generateShoppingList()">
+                        ✨ Générer la liste
+                    </button>
+                    <button class="btn" onclick="showAddItemModal()">
+                        ➕ Ajouter un article
+                    </button>
+                </div>
+
+                <div id="shoppingListContainer" style="display: none;">
+                    <!-- Les catégories seront générées ici -->
+                </div>
+
+                <div id="emptyShoppingList" class="empty-state">
+                    <p>Aucune liste de courses</p>
+                    <button class="btn btn-primary" onclick="showPage('planning')">
+                        Créer un planning d'abord
                     </button>
                 </div>
             </div>
 
-            <!-- Settings Page -->
+            <!-- Page Paramètres -->
             <div id="settings" class="page-section">
                 <h2 class="page-title">⚙️ Paramètres</h2>
-                
-                <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 25px;">🔧 Configuration</h3>
+
+                <div class="settings-section">
+                    <h3>🔑 Clés API</h3>
                     
                     <div class="form-group">
-                        <label>Taille des verres d'eau</label>
-                        <select id="glassSize" onchange="updateGlassSize()">
-                            <option value="25">25cl (petit verre)</option>
-                            <option value="33">33cl (canette)</option>
-                            <option value="50">50cl (grande bouteille)</option>
-                            <option value="75">75cl (bouteille sport)</option>
-                            <option value="100">100cl (1 litre)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Objectif d'hydratation journalier (cl)</label>
-                        <input type="number" id="hydrationGoal" value="200" min="100" max="500" step="10" onchange="updateHydrationGoal()">
+                        <label>OpenAI API Key</label>
+                        <input type="password" id="openaiKey" placeholder="sk-...">
+                        <small>Pour le chat IA et l'analyse de photos</small>
                     </div>
 
-                    <div class="form-group">
-                        <label>Clé API OpenAI (optionnel - pour fonctions IA avancées)</label>
-                        <input type="text" placeholder="sk-..." id="openaiKey">
-                        <p style="font-size: 14px; color: #666; margin-top: 5px;">Pour chat IA, génération de recettes et analyse photos</p>
-                    </div>
-
-                    <button class="btn btn-success" style="width: 100%; margin-top: 20px;" onclick="saveSettings()">
-                        Sauvegarder les paramètres
+                    <button class="btn btn-success" onclick="saveSettings()">
+                        Sauvegarder
                     </button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>📱 Application</h3>
+                    <button class="btn" onclick="exportData()">📥 Exporter données</button>
+                    <button class="btn" onclick="importData()">📤 Importer données</button>
+                    <button class="btn btn-danger" onclick="resetApp()">🗑️ Réinitialiser</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Modals -->
+    
+    <!-- Modal Ajout Aliment -->
     <div id="addFoodModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Ajouter un aliment personnalisé</h3>
+                <h3>➕ Ajouter un aliment</h3>
                 <span class="modal-close" onclick="closeModal('addFoodModal')">&times;</span>
             </div>
+            
             <div class="form-group">
-                <label>Nom de l'aliment</label>
+                <label>Nom</label>
                 <input type="text" id="foodName" placeholder="Ex: Poulet grillé">
             </div>
+            
             <div class="form-group">
                 <label>Quantité (g)</label>
                 <input type="number" id="foodQuantity" value="100">
             </div>
+            
             <div class="form-group">
                 <label>Calories</label>
-                <input type="number" id="foodCalories" placeholder="165">
+                <input type="number" id="foodCalories">
             </div>
+            
             <div class="form-group">
                 <label>Protéines (g)</label>
-                <input type="number" id="foodProteins" placeholder="31">
+                <input type="number" id="foodProteins">
             </div>
+            
             <div class="form-group">
                 <label>Glucides (g)</label>
-                <input type="number" id="foodCarbs" placeholder="0">
+                <input type="number" id="foodCarbs">
             </div>
+            
             <div class="form-group">
                 <label>Lipides (g)</label>
-                <input type="number" id="foodFats" placeholder="3.6">
+                <input type="number" id="foodFats">
             </div>
-            <button class="btn btn-primary" style="width: 100%;" onclick="addCustomFood()">
-                Ajouter l'aliment
+            
+            <button class="btn btn-primary" onclick="addCustomFood()">
+                Ajouter
             </button>
         </div>
     </div>
 
-    <!-- First Time Modal -->
-    <div id="firstTimeModal" class="modal">
-        <div class="modal-content first-time-modal">
-            <h2>🎉 Bienvenue sur NutriSync!</h2>
-            <p>Votre application de nutrition intelligente avec synchronisation cloud</p>
-            
-            <div class="sync-code-display">
-                <p style="font-size: 20px; margin-bottom: 10px;">Votre code de synchronisation unique :</p>
-                <div class="code" id="firstTimeCode">NUTRI-XXXXX</div>
-                <button class="copy-btn" onclick="copyFirstTimeCode()">📋 Copier le code</button>
-            </div>
-            
-            <p style="font-size: 16px; margin-bottom: 20px;">
-                ⚠️ <strong>Important :</strong> Notez ce code ! Il vous permettra de retrouver vos données sur n'importe quel appareil.
-            </p>
-            
-            <button class="btn" style="background: white; color: #7c3aed; font-size: 18px; padding: 15px 40px;" onclick="closeFirstTimeModal()">
-                ✨ Commencer
-            </button>
-        </div>
-    </div>
-
-    <!-- Sync Code Modal -->
+    <!-- Modal Sync -->
     <div id="syncModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🔗 Synchroniser avec un code existant</h3>
+                <h3>🔗 Synchronisation</h3>
                 <span class="modal-close" onclick="closeModal('syncModal')">&times;</span>
             </div>
-            <div style="margin-bottom: 20px;">
-                <p style="margin-bottom: 20px;">Entrez votre code de synchronisation pour récupérer vos données :</p>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="existingSyncCode" placeholder="NUTRI-XXXXX" style="text-transform: uppercase; flex: 1;">
-                    <button class="btn btn-primary" onclick="syncWithCode()">
-                        🔄 Synchroniser
-                    </button>
-                </div>
-                <div class="alert alert-warning" style="margin-top: 20px;">
-                    ⚠️ <strong>Attention :</strong> Cela remplacera toutes vos données actuelles !
-                </div>
+            
+            <p>Entrez votre code de synchronisation :</p>
+            <input type="text" id="existingSyncCode" placeholder="NUTRI-XXXXX">
+            
+            <div class="alert alert-warning">
+                ⚠️ Cela remplacera toutes vos données actuelles !
             </div>
-        </div>
-    </div>
-
-    <!-- Barcode Result Modal -->
-    <div id="barcodeResultModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Produit trouvé</h3>
-                <span class="modal-close" onclick="closeModal('barcodeResultModal')">&times;</span>
-            </div>
-            <div id="barcodeProductInfo">
-                <!-- Product info will be displayed here -->
-            </div>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="addBarcodeProduct()">
-                Ajouter ce produit
+            
+            <button class="btn btn-primary" onclick="syncWithCode()">
+                Synchroniser
             </button>
         </div>
     </div>
 
-    <!-- Success Message -->
-    <div id="successMessage" class="success-message">
-        ✓ Enregistré avec succès !
+    <!-- Modal Article Courses -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Ajouter un article</h3>
+                <span class="modal-close" onclick="closeModal('addItemModal')">&times;</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Nom</label>
+                <input type="text" id="itemName" placeholder="Ex: Tomates">
+            </div>
+            
+            <div class="form-group">
+                <label>Quantité</label>
+                <input type="number" id="itemQuantity" value="1">
+                <select id="itemUnit">
+                    <option value="pcs">pièce(s)</option>
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="l">L</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Catégorie</label>
+                <select id="itemCategory">
+                    <option value="fresh">🥬 Fruits & Légumes</option>
+                    <option value="protein">🥩 Protéines</option>
+                    <option value="dairy">🥛 Produits Laitiers</option>
+                    <option value="grains">🌾 Féculents</option>
+                    <option value="pantry">🥫 Épicerie</option>
+                    <option value="other">📦 Autres</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="addShoppingItem()">
+                Ajouter
+            </button>
+        </div>
     </div>
 
+    <!-- Message de succès -->
+    <div id="successMessage" class="success-message">
+        ✓ Succès !
+    </div>
+
+    <!-- Scripts -->
+    <script src="integrations.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
