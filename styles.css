@@ -111,6 +111,7 @@ body {
     white-space: nowrap;
     border-bottom: 3px solid transparent;
     transition: all 0.3s;
+    cursor: pointer;
 }
 
 .nav-item:hover {
@@ -576,6 +577,41 @@ input[type="range"]::-moz-range-thumb {
     color: #333;
 }
 
+/* First Time Modal */
+.first-time-modal {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+}
+
+.first-time-modal h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.first-time-modal p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.sync-code-display {
+    background: rgba(255,255,255,0.2);
+    padding: 30px;
+    border-radius: 15px;
+    margin: 30px 0;
+}
+
+.sync-code-display .code {
+    font-size: 36px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    margin: 20px 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
 /* AI Coach Chat */
 .chat-container {
     background: #f5f5f5;
@@ -668,98 +704,69 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
 }
 
-/* Recipe card */
-.recipe-card {
+/* Profile section */
+.profile-form {
     background: white;
-    padding: 15px;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.macro-recommendation {
+    background: #fffbeb;
+    border: 1px solid #fbbf24;
+    padding: 20px;
     border-radius: 10px;
+    margin-top: 20px;
+}
+
+.macro-recommendation h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 10px;
+    color: #92400e;
+}
+
+.macro-recommendation ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.macro-recommendation li {
+    padding: 5px 0;
+    color: #78350f;
+}
+
+/* Quick protein calculator */
+.quick-calc {
+    background: #e8f5e9;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.quick-calc h4 {
+    color: #2e7d32;
+    margin-bottom: 15px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-    transition: all 0.3s;
+    gap: 8px;
 }
 
-.recipe-card:hover {
-    transform: translateX(5px);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
-
-/* Suggestion card */
-.suggestion-card {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
+.calc-input-group {
     display: flex;
     align-items: center;
-    gap: 15px;
-    transition: all 0.3s;
-    cursor: pointer;
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
-.suggestion-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.suggestion-card .macro-info {
-    margin-left: auto;
-    text-align: right;
-    font-size: 14px;
-    color: #666;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideIn {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .nav-bar {
-        overflow-x: auto;
-    }
-    
-    .nutrition-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-    
-    .stat-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .sync-info-box {
-        width: calc(100% - 40px);
-        right: 20px;
-    }
-}
-
-/* Hidden sections */
-.page-section {
-    display: none;
-}
-
-.page-section.active {
-    display: block;
-    animation: fadeIn 0.3s;
+.calc-result {
+    background: #c8e6c9;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #1b5e20;
+    font-weight: 500;
 }
 
 /* Food search */
@@ -821,87 +828,57 @@ input[type="range"]::-moz-range-thumb {
     background: #f57c00;
 }
 
-/* Photo analysis */
-.photo-analysis {
-    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.photo-upload-area {
-    border: 3px dashed rgba(255,255,255,0.5);
-    border-radius: 12px;
-    padding: 40px;
-    margin: 20px 0;
+/* Search results */
+.food-result-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
     transition: all 0.3s;
+    border: 1px solid #e0e0e0;
 }
 
-.photo-upload-area:hover {
-    border-color: white;
-    background: rgba(255,255,255,0.1);
+.food-result-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    border-color: #7c3aed;
 }
 
-/* Alert box */
-.alert {
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.food-info h4 {
+    margin-bottom: 5px;
+    color: #333;
 }
 
-.alert-info {
-    background: #e3f2fd;
-    color: #1976d2;
+.food-info p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
 }
 
-.alert-warning {
-    background: #fff3cd;
-    color: #856404;
+.food-brand {
+    font-style: italic;
+    color: #999;
 }
 
-.alert-success {
-    background: #d4edda;
-    color: #155724;
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* Profile section */
-.profile-form {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+@keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
-.macro-recommendation {
-    background: #fffbeb;
-    border: 1px solid #fbbf24;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 20px;
-}
-
-.macro-recommendation h4 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    color: #92400e;
-}
-
-.macro-recommendation ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-.macro-recommendation li {
-    padding: 5px 0;
-    color: #78350f;
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 /* Loading spinner */
@@ -951,89 +928,62 @@ input[type="range"]::-moz-range-thumb {
     opacity: 0.5;
 }
 
-/* Quick protein calculator */
-.quick-calc {
-    background: #e8f5e9;
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-}
-
-.quick-calc h4 {
-    color: #2e7d32;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.calc-input-group {
+/* Alert box */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
 }
 
-.calc-result {
-    background: #c8e6c9;
-    padding: 10px 15px;
-    border-radius: 8px;
-    color: #1b5e20;
-    font-weight: 500;
+.alert-info {
+    background: #e3f2fd;
+    color: #1976d2;
 }
 
-/* Sync Code Modal */
-#syncModal {
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Hidden sections */
+.page-section {
     display: none;
 }
 
-.sync-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.page-section.active {
+    display: block;
+    animation: fadeIn 0.3s;
 }
 
-.sync-input-group {
-    display: flex;
-    gap: 10px;
-}
-
-.sync-input-group input {
-    flex: 1;
-}
-
-/* Search results */
-.food-result-item {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: 1px solid #e0e0e0;
-}
-
-.food-result-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    border-color: #7c3aed;
-}
-
-.food-info h4 {
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.food-info p {
-    font-size: 14px;
-    color: #666;
-    margin: 0;
-}
-
-.food-brand {
-    font-style: italic;
-    color: #999;
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-bar {
+        overflow-x: auto;
+    }
+    
+    .nutrition-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .stat-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .sync-info-box {
+        width: calc(100% - 40px);
+        right: 20px;
+    }
 }
