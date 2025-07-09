@@ -1,42 +1,120 @@
-# NutriSync
+# NutriSync 🥗
 
-**Synchronise ta nutrition avec tes objectifs** 🎯
+Application de suivi nutritionnel avec intelligence artificielle.
 
-Application web intelligente de suivi nutritionnel avec IA intégrée et synchronisation multi-appareils.
+## 🚀 Installation
 
-## ✨ Concept
+### Méthode 1 : Utilisation directe
 
-NutriSync est plus qu'un simple tracker nutritionnel. C'est votre compagnon intelligent qui synchronise parfaitement votre alimentation avec vos objectifs personnels, que ce soit pour perdre du poids, prendre du muscle ou maintenir une santé optimale.
+1. Téléchargez tous les fichiers
+2. Ouvrez `index.html` dans votre navigateur
+3. C'est prêt !
 
-## 🚀 Fonctionnalités Principales
-
-### 🔄 Synchronisation Intelligente
-- Calcul automatique personnalisé de vos besoins
-- Adaptation en temps réel selon vos progrès
-- Suggestions intelligentes basées sur vos macros manquantes
-- Prédictions ML pour anticiper les plateaux
-
-### 🤖 Intelligence Artificielle Avancée
-- Coach nutritionnel conversationnel (ChatGPT)
-- Analyse de photos de repas multi-aliments
-- Coach vocal multilingue pour motivation
-- Analyse visuelle des progrès corporels
-
-### 📊 Tracking Complet
-- Suivi des macros et micronutriments détaillé
-- Mode jeûne intermittent avec timer intégré
-- Scanner de code-barres Open Food Facts
-- Graphiques d'évolution interactifs
-
-### 💾 Données & Export
-- Sauvegarde locale automatique
-- Export/Import JSON, CSV, PDF
-- Rapports hebdomadaires et mensuels
-- Prêt pour la synchronisation cloud
-
-## 🛠️ Installation
+### Méthode 2 : Avec un serveur local
 
 ```bash
-git clone https://github.com/[votre-username]/nutrisync.git
-cd nutrisync
-# Ouvrez index.html dans votre navigateur
+# Si vous avez Python
+python -m http.server 8000
+
+# Ou avec Node.js
+npx http-server
+```
+
+Puis ouvrez http://localhost:8000
+
+## 📱 Installation sur mobile
+
+1. Ouvrez l'application dans Chrome ou Safari
+2. Cliquez sur le menu (3 points)
+3. Sélectionnez "Ajouter à l'écran d'accueil"
+
+## ✨ Fonctionnalités
+
+- **Dashboard complet** : Suivi calories, protéines, hydratation
+- **Calcul automatique** : Besoins nutritionnels personnalisés
+- **Recherche d'aliments** : Base de données Open Food Facts
+- **Planning de repas** : Génération automatique
+- **Liste de courses** : Créée depuis votre planning
+- **Analytics** : Graphiques et export de données
+- **Chat IA** : Conseils personnalisés (nécessite clé OpenAI)
+- **Synchronisation** : Code unique pour tous vos appareils
+
+## 🔧 Configuration
+
+### Clé API OpenAI (optionnelle)
+
+Pour activer le chat IA :
+
+1. Allez dans Paramètres
+2. Entrez votre clé API OpenAI
+3. Sauvegardez
+
+Obtenez une clé sur : https://platform.openai.com/api-keys
+
+## 📊 Utilisation
+
+### 1. Configuration initiale
+
+- Allez dans **Profil**
+- Entrez vos informations (âge, poids, taille, etc.)
+- Cliquez sur **Calculer mes besoins**
+
+### 2. Ajouter des aliments
+
+- Allez dans **Aliments**
+- Recherchez ou scannez un code-barres
+- Ou ajoutez manuellement
+
+### 3. Créer un planning
+
+- Allez dans **Planning**
+- Cliquez sur **Générer mon planning**
+
+### 4. Générer la liste de courses
+
+- Allez dans **Courses**
+- Cliquez sur **Générer la liste**
+
+## 💾 Sauvegarde
+
+Vos données sont :
+- Sauvegardées automatiquement en local
+- Synchronisables avec votre code unique
+- Exportables en JSON/CSV
+
+## 🔐 Sécurité
+
+- Toutes les données restent sur votre appareil
+- Aucun tracking ou publicité
+- Clés API stockées localement
+
+## 🐛 Résolution de problèmes
+
+### L'application ne se charge pas
+
+Vérifiez que tous les fichiers sont présents :
+- index.html
+- styles.css
+- script.js
+- integrations.js
+- manifest.json
+
+### Les données ne se sauvegardent pas
+
+Vérifiez que votre navigateur autorise le localStorage.
+
+### Le scanner ne fonctionne pas
+
+Le scanner nécessite HTTPS ou localhost.
+
+## 📄 License
+
+MIT - Utilisez librement !
+
+## 👨‍💻 Auteur
+
+Créé avec ❤️ par Anthony
+
+---
+
+**Besoin d'aide ?** Ouvrez une issue sur GitHub !
