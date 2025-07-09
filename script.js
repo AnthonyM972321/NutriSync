@@ -1,9 +1,10 @@
-// NutriSync - Application complète
+// ===================================
+// NutriSync - Script Principal
+// ===================================
 
-// State management
+// État de l'application
 let appState = {
     syncCode: null,
-    lastSync: null,
     user: {
         gender: 'homme',
         age: 31,
@@ -32,363 +33,143 @@ let appState = {
         dailyGoal: 200
     },
     meals: [],
-    currentMealType: 'breakfast',
+    weekPlan: null,
+    weightHistory: [],
+    shoppingList: {
+        fresh: [],
+        protein: [],
+        dairy: [],
+        grains: [],
+        pantry: [],
+        other: []
+    },
     settings: {
-        glassSize: 25,
-        hydrationGoal: 200,
         apiKeys: {}
     }
 };
 
-// Configuration
-const STORAGE_KEY = 'nutrisync_data';
-let autoSaveInterval = null;
-let syncInProgress = false;
-
-// Initialize the app
+// Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    initializeSync();
-    updateCurrentDate();
-    initializeHydration();
-    updateDashboard();
-    loadFromLocalStorage();
-    updateSyncUI();
-    checkFirstTime();
-    startAutoSave();
-    
-    // Add enter key support for chat
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    }
+    initializeApp();
 });
 
-// Check if first time user
-function checkFirstTime() {
-    const hasVisited = localStorage.getItem('nutriSyncVisited');
-    if (!hasVisited) {
-        document.getElementById('firstTimeModal').classList.add('active');
-        document.getElementById('firstTimeCode').textContent = appState.syncCode;
-        localStorage.setItem('nutriSyncVisited', 'true');
-    }
-}
-
-function closeFirstTimeModal() {
-    document.getElementById('firstTimeModal').classList.remove('active');
-}
-
-function copyFirstTimeCode() {
-    const code = appState.syncCode;
-    navigator.clipboard.writeText(code).then(() => {
-        const btn = event.target;
-        btn.textContent = '✓ Copié !';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.textContent = '📋 Copier le code';
-            btn.classList.remove('copied');
-        }, 2000);
-    });
-}
-
-// Sync Functions
-function generateSyncCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = 'NUTRI-';
-    for (let i = 0; i < 5; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-}
-
-async function initializeSync() {
-    const storedCode = localStorage.getItem('nutriSyncCode');
-    if (storedCode) {
-        appState.syncCode = storedCode;
-        await loadFromCloud();
-    } else {
-        appState.syncCode = generateSyncCode();
-        localStorage.setItem('nutriSyncCode', appState.syncCode);
-        await saveToCloud();
-    }
-    updateSyncUI();
-}
-
-async function saveToCloud() {
-    if (syncInProgress) return;
-    syncInProgress = true;
-    updateSyncBadge('syncing');
+// Fonction d'initialisation principale
+function initializeApp() {
+    // Charger l'état sauvegardé
+    loadState();
     
-    try {
-        const storageKey = `nutrisync_${appState.syncCode}`;
-        localStorage.setItem(storageKey, JSON.stringify(appState));
-        appState.lastSync = Date.now();
-        updateSyncBadge('success');
-        updateSyncUI();
-        saveToLocalStorage();
-    } catch (error) {
-        console.error('Sync error:', error);
-        updateSyncBadge('error');
-        saveToLocalStorage();
-    } finally {
-        syncInProgress = false;
-    }
-}
-
-async function loadFromCloud() {
-    if (!appState.syncCode) return;
+    // Générer ou récupérer le code de sync
+    initializeSyncCode();
     
-    try {
-        const storageKey = `nutrisync_${appState.syncCode}`;
-        const cloudData = localStorage.getItem(storageKey);
-        
-        if (cloudData) {
-            const parsedData = JSON.parse(cloudData);
-            const localApiKeys = appState.settings.apiKeys;
-            appState = {
-                ...parsedData,
-                settings: {
-                    ...parsedData.settings,
-                    apiKeys: localApiKeys
-                }
-            };
-            updateDashboard();
-            initializeHydration();
-            updateAllUI();
-            showSuccess('Données synchronisées !');
-        }
-    } catch (error) {
-        console.error('Load error:', error);
-        loadFromLocalStorage();
-    }
-}
-
-function updateSyncBadge(status) {
-    const badge = document.getElementById('syncBadge');
-    const statusText = document.getElementById('syncStatus');
-    if (!badge || !statusText) return;
+    // Mettre à jour la date
+    updateCurrentDate();
     
-    switch (status) {
-        case 'syncing':
-            badge.className = 'sync-badge syncing';
-            statusText.textContent = 'Synchronisation...';
-            break;
-        case 'success':
-            badge.className = 'sync-badge';
-            statusText.textContent = 'Données synchronisées';
-            break;
-        case 'error':
-            badge.className = 'sync-badge error';
-            statusText.textContent = 'Erreur de sync';
-            break;
-    }
-}
-
-function updateSyncUI() {
-    const syncCodeElements = document.querySelectorAll('#syncCode, #analyticsCode');
-    syncCodeElements.forEach(el => {
-        if (el) el.textContent = appState.syncCode;
-    });
+    // Initialiser l'hydratation
+    initializeHydration();
     
-    const lastSyncElements = document.querySelectorAll('#lastSyncTime');
-    lastSyncElements.forEach(el => {
-        if (el && appState.lastSync) {
-            const timeDiff = Date.now() - appState.lastSync;
-            const seconds = Math.floor(timeDiff / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            
-            if (hours > 0) {
-                el.textContent = `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
-            } else if (minutes > 0) {
-                el.textContent = `Il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
-            } else {
-                el.textContent = 'Il y a quelques secondes';
-            }
-        }
-    });
+    // Mettre à jour le dashboard
+    updateDashboard();
+    
+    // Sauvegarder automatiquement toutes les 30 secondes
+    setInterval(saveState, 30000);
 }
 
+// Gestion du code de synchronisation
+function initializeSyncCode() {
+    let code = localStorage.getItem('nutriSyncCode');
+    
+    if (!code) {
+        // Générer un nouveau code
+        code = 'NUTRI-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+        localStorage.setItem('nutriSyncCode', code);
+    }
+    
+    appState.syncCode = code;
+    document.getElementById('syncCode').textContent = code;
+}
+
+// Afficher/cacher info sync
 function toggleSyncInfo() {
     const infoBox = document.getElementById('syncInfoBox');
     infoBox.classList.toggle('show');
 }
 
+// Copier le code de sync
 function copySyncCode() {
     const code = appState.syncCode;
     navigator.clipboard.writeText(code).then(() => {
-        const btn = event.target;
-        btn.textContent = '✓ Copié !';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.textContent = '📋 Copier';
-            btn.classList.remove('copied');
-        }, 2000);
+        showSuccess('Code copié !');
     });
 }
 
+// Afficher le modal de sync
 function showSyncModal() {
     document.getElementById('syncModal').classList.add('active');
 }
 
-async function syncWithCode() {
+// Synchroniser avec un code existant
+function syncWithCode() {
     const code = document.getElementById('existingSyncCode').value.trim().toUpperCase();
+    
     if (!code || !code.startsWith('NUTRI-')) {
-        alert('Code invalide. Le format doit être NUTRI-XXXXX');
+        showSuccess('Code invalide', 'error');
         return;
     }
     
     if (confirm('Cela remplacera toutes vos données actuelles. Continuer ?')) {
-        const storageKey = `nutrisync_${code}`;
-        const syncData = localStorage.getItem(storageKey);
-        
-        if (syncData) {
-            try {
-                const parsedData = JSON.parse(syncData);
-                appState = parsedData;
-                appState.syncCode = code;
-                localStorage.setItem('nutriSyncCode', code);
-                updateAllUI();
-                showSuccess('Synchronisation réussie !');
-                closeModal('syncModal');
-            } catch (error) {
-                alert('Erreur lors de la synchronisation');
-            }
-        } else {
-            alert('Aucune donnée trouvée pour ce code');
-        }
+        // Ici vous pourriez charger les données depuis un serveur
+        localStorage.setItem('nutriSyncCode', code);
+        appState.syncCode = code;
+        showSuccess('Synchronisation réussie !');
+        closeModal('syncModal');
+        location.reload();
     }
 }
 
-function startAutoSave() {
-    autoSaveInterval = setInterval(() => {
-        saveToCloud();
-    }, 30000);
-}
-
-function forceSync() {
-    saveToCloud();
-    showSuccess('Synchronisation forcée !');
-}
-
-// Local Storage Functions
-function saveToLocalStorage() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-    } catch (e) {
-        console.error('Failed to save to localStorage:', e);
-    }
-}
-
-function loadFromLocalStorage() {
-    try {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        if (savedData) {
-            const parsedData = JSON.parse(savedData);
-            const currentSyncCode = appState.syncCode;
-            appState = {
-                ...parsedData,
-                syncCode: currentSyncCode || parsedData.syncCode
-            };
-            updateAllUI();
-        }
-    } catch (e) {
-        console.error('Failed to load from localStorage:', e);
-    }
-}
-
-// Update all UI elements
-function updateAllUI() {
-    updateDashboard();
-    initializeHydration();
-    updateProfileForm();
-    updateAnalytics();
-    updateMealsList();
-}
-
-// Update current date
+// Mettre à jour la date courante
 function updateCurrentDate() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const today = new Date().toLocaleDateString('fr-FR', options);
-    const dateElement = document.getElementById('currentDate');
-    if (dateElement) {
-        dateElement.textContent = today;
-    }
+    document.getElementById('currentDate').textContent = today;
 }
 
-// Navigation
+// Navigation entre les pages
 function showPage(pageId) {
-    // Hide all pages
+    // Cacher toutes les pages
     document.querySelectorAll('.page-section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Show selected page
+    // Afficher la page sélectionnée
     document.getElementById(pageId).classList.add('active');
     
-    // Update nav
+    // Mettre à jour la navigation
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
+    event.target.classList.add('active');
     
-    // Find and activate the clicked nav item
-    if (event && event.target) {
-        event.target.closest('.nav-item').classList.add('active');
-    }
-    
-    // Save state
-    saveToCloud();
+    // Sauvegarder l'état
+    saveState();
 }
 
-// Goal selection
-function setGoal(goal) {
-    appState.user.goal = goal;
-    
-    // Update UI
-    document.querySelectorAll('.stat-card').forEach(card => {
-        card.classList.remove('active');
-    });
-    event.target.closest('.stat-card').classList.add('active');
-    
-    // Recalculate needs if profile is complete
-    if (appState.user.weight && appState.user.height) {
-        calculateNeeds();
-    }
-    
-    saveToCloud();
-}
+// ===================================
+// HYDRATATION
+// ===================================
 
-// Meal type selection
-let currentMealType = 'breakfast';
-
-function selectMealType(type, event) {
-    currentMealType = type;
-    appState.currentMealType = type;
-    
-    // Update UI
-    document.querySelectorAll('.meal-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.closest('.meal-btn').classList.add('active');
-}
-
-// Hydration tracking
 function initializeHydration() {
     const container = document.getElementById('hydrationGlasses');
-    if (!container) return;
-    
     container.innerHTML = '';
     
     for (let i = 0; i < appState.hydration.targetGlasses; i++) {
         const glass = document.createElement('div');
         glass.className = 'glass';
         glass.onclick = () => toggleGlass(i);
+        
         if (i < appState.hydration.glasses) {
             glass.classList.add('filled');
         }
+        
         container.appendChild(glass);
     }
     
@@ -404,31 +185,34 @@ function toggleGlass(index) {
     
     initializeHydration();
     updateDashboard();
-    saveToCloud();
+    saveState();
 }
 
 function resetHydration() {
     appState.hydration.glasses = 0;
     initializeHydration();
     updateDashboard();
-    saveToCloud();
+    saveState();
     showSuccess('Hydratation réinitialisée');
 }
 
 function updateHydrationStatus() {
     const totalCl = appState.hydration.glasses * appState.hydration.glassVolume;
-    const statusEl = document.getElementById('hydrationStatus');
-    if (statusEl) {
-        statusEl.textContent = `${appState.hydration.glasses}/8 verres = ${totalCl}cl`;
-    }
+    document.getElementById('hydrationStatus').textContent = 
+        `${appState.hydration.glasses}/8 verres = ${totalCl}cl / ${appState.hydration.dailyGoal}cl`;
 }
 
-// Dashboard updates
+// ===================================
+// DASHBOARD
+// ===================================
+
 function updateDashboard() {
-    updateElement('consumedCalories', appState.nutrition.calories);
-    updateElement('remainingCalories', Math.max(0, appState.nutrition.targetCalories - appState.nutrition.calories));
-    updateElement('metabolicRate', appState.nutrition.targetCalories + 1000);
+    // Mettre à jour les calories
+    document.getElementById('consumedCalories').textContent = appState.nutrition.calories;
+    document.getElementById('remainingCalories').textContent = 
+        Math.max(0, appState.nutrition.targetCalories - appState.nutrition.calories);
     
+    // Mettre à jour les barres de progression
     updateProgressBar('calories', appState.nutrition.calories, appState.nutrition.targetCalories);
     updateProgressBar('proteins', appState.nutrition.proteins, appState.nutrition.targetProteins);
     updateProgressBar('hydration', 
@@ -436,73 +220,39 @@ function updateDashboard() {
         appState.hydration.dailyGoal
     );
     
-    updateElement('caloriesProgress', `${appState.nutrition.calories} / ${appState.nutrition.targetCalories}`);
-    updateElement('proteinsProgress', `${appState.nutrition.proteins}g / ${appState.nutrition.targetProteins}g`);
-    updateElement('hydrationProgress', 
-        `${appState.hydration.glasses * appState.hydration.glassVolume}cl / ${appState.hydration.dailyGoal}cl`
-    );
-    
-    updateMealsList();
-}
-
-function updateElement(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
+    // Mettre à jour les textes de progression
+    document.getElementById('caloriesProgress').textContent = 
+        `${appState.nutrition.calories} / ${appState.nutrition.targetCalories}`;
+    document.getElementById('proteinsProgress').textContent = 
+        `${appState.nutrition.proteins}g / ${appState.nutrition.targetProteins}g`;
+    document.getElementById('hydrationProgress').textContent = 
+        `${appState.hydration.glasses * appState.hydration.glassVolume}cl / ${appState.hydration.dailyGoal}cl`;
 }
 
 function updateProgressBar(type, current, target) {
-    const percentage = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+    const percentage = Math.min((current / target) * 100, 100);
     const bar = document.getElementById(`${type}Bar`);
-    if (bar) bar.style.width = percentage + '%';
-}
-
-// Update meals list
-function updateMealsList() {
-    const mealsContainer = document.getElementById('todaysMeals');
-    if (!mealsContainer) return;
-    
-    if (appState.meals.length === 0) {
-        mealsContainer.innerHTML = `
-            <p>Aucun repas ajouté aujourd'hui</p>
-            <button class="btn btn-primary" style="margin-top: 20px;" onclick="showPage('foods')">
-                Ajouter un repas
-            </button>
-        `;
-    } else {
-        let mealsHTML = '<div style="display: flex; flex-direction: column; gap: 10px;">';
-        appState.meals.forEach((meal, index) => {
-            mealsHTML += `
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>${meal.name}</strong> (${meal.quantity}g)<br>
-                        <span style="font-size: 14px; color: #666;">
-                            ${meal.calories} kcal | P: ${meal.proteins}g | G: ${meal.carbs}g | L: ${meal.fats}g
-                        </span>
-                    </div>
-                    <button class="btn" style="background: #f44336; color: white; padding: 5px 15px;" onclick="removeMeal(${index})">
-                        ✕
-                    </button>
-                </div>
-            `;
-        });
-        mealsHTML += '</div>';
-        mealsContainer.innerHTML = mealsHTML;
+    if (bar) {
+        bar.style.width = percentage + '%';
     }
 }
 
-function removeMeal(index) {
-    const meal = appState.meals[index];
-    appState.nutrition.calories -= meal.calories;
-    appState.nutrition.proteins -= meal.proteins;
-    appState.nutrition.carbs -= meal.carbs;
-    appState.nutrition.fats -= meal.fats;
-    appState.meals.splice(index, 1);
-    updateDashboard();
-    saveToCloud();
-    showSuccess('Repas supprimé');
+function selectGoal(goal) {
+    appState.user.goal = goal;
+    
+    // Mettre à jour l'UI
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    event.target.closest('.stat-card').classList.add('active');
+    
+    saveState();
 }
 
-// Profile and calculations
+// ===================================
+// PROFIL
+// ===================================
+
 function updateMacros() {
     const proteinPercent = parseInt(document.getElementById('proteinSlider').value);
     const fatPercent = parseInt(document.getElementById('fatSlider').value);
@@ -517,22 +267,6 @@ function updateMacros() {
     appState.user.carbPercent = carbPercent;
 }
 
-function calculateProteinRatio() {
-    const weight = parseFloat(document.getElementById('weight').value) || appState.user.weight;
-    const proteinPerKg = parseFloat(document.getElementById('proteinPerKg').value);
-    const totalProtein = weight * proteinPerKg;
-    
-    const estimatedCalories = appState.nutrition.targetCalories || 2000;
-    const proteinCalories = totalProtein * 4;
-    const proteinPercent = Math.round((proteinCalories / estimatedCalories) * 100);
-    
-    document.getElementById('proteinRatioResult').textContent = 
-        `Résultat : ${proteinPercent}% de protéines (${Math.round(totalProtein)}g/jour)`;
-    
-    document.getElementById('proteinSlider').value = proteinPercent;
-    updateMacros();
-}
-
 function calculateNeeds() {
     const gender = document.getElementById('gender').value;
     const age = parseInt(document.getElementById('age').value);
@@ -541,14 +275,7 @@ function calculateNeeds() {
     const activity = document.getElementById('activity').value;
     const goal = document.getElementById('goal').value;
     
-    appState.user.gender = gender;
-    appState.user.age = age;
-    appState.user.height = height;
-    appState.user.weight = weight;
-    appState.user.activity = activity;
-    appState.user.goal = goal;
-    
-    // Calculate BMR (Mifflin-St Jeor)
+    // Calcul du métabolisme de base (Mifflin-St Jeor)
     let bmr;
     if (gender === 'homme') {
         bmr = 10 * weight + 6.25 * height - 5 * age + 5;
@@ -556,6 +283,7 @@ function calculateNeeds() {
         bmr = 10 * weight + 6.25 * height - 5 * age - 161;
     }
     
+    // Multiplicateurs d'activité
     const activityMultipliers = {
         sedentary: 1.2,
         light: 1.375,
@@ -566,6 +294,7 @@ function calculateNeeds() {
     
     let tdee = bmr * activityMultipliers[activity];
     
+    // Ajustements selon l'objectif
     const goalAdjustments = {
         'cut': -500,
         'cut-moderate': -250,
@@ -576,6 +305,7 @@ function calculateNeeds() {
     
     const targetCalories = Math.round(tdee + goalAdjustments[goal]);
     
+    // Calcul des macros
     const proteinCalories = (targetCalories * appState.user.proteinPercent) / 100;
     const fatCalories = (targetCalories * appState.user.fatPercent) / 100;
     const carbCalories = (targetCalories * appState.user.carbPercent) / 100;
@@ -585,198 +315,152 @@ function calculateNeeds() {
     appState.nutrition.targetFats = Math.round(fatCalories / 9);
     appState.nutrition.targetCarbs = Math.round(carbCalories / 4);
     
+    // Mettre à jour l'UI
+    document.getElementById('metabolicRate').textContent = Math.round(tdee);
     updateDashboard();
+    
     showSuccess(`Besoins calculés: ${targetCalories} kcal/jour`);
-    saveToCloud();
 }
 
 function saveProfile() {
-    calculateNeeds();
+    // Sauvegarder les valeurs du profil
+    appState.user.gender = document.getElementById('gender').value;
+    appState.user.age = parseInt(document.getElementById('age').value);
+    appState.user.height = parseInt(document.getElementById('height').value);
+    appState.user.weight = parseFloat(document.getElementById('weight').value);
+    appState.user.activity = document.getElementById('activity').value;
+    appState.user.goal = document.getElementById('goal').value;
+    
+    saveState();
     showSuccess('Profil sauvegardé !');
 }
 
-function updateProfileForm() {
-    if (document.getElementById('gender')) {
-        document.getElementById('gender').value = appState.user.gender;
-        document.getElementById('age').value = appState.user.age;
-        document.getElementById('height').value = appState.user.height;
-        document.getElementById('weight').value = appState.user.weight;
-        document.getElementById('activity').value = appState.user.activity;
-        document.getElementById('goal').value = appState.user.goal;
-        document.getElementById('proteinSlider').value = appState.user.proteinPercent;
-        document.getElementById('fatSlider').value = appState.user.fatPercent;
-        updateMacros();
-    }
-}
+// ===================================
+// ALIMENTS
+// ===================================
 
-// Open Food Facts Integration
-async function searchOpenFoodFacts() {
+function searchFood() {
     const query = document.getElementById('foodSearchInput').value.trim();
+    
     if (!query) {
-        alert('Veuillez entrer un nom d\'aliment');
+        showSuccess('Veuillez entrer un nom d\'aliment', 'error');
         return;
     }
     
-    showSuccess('Recherche en cours...');
+    // Ici vous appelleriez votre API
+    // Pour l'exemple, nous affichons des résultats fictifs
+    const mockResults = [
+        { name: 'Poulet grillé', calories: 165, proteins: 31, carbs: 0, fats: 3.6 },
+        { name: 'Riz blanc cuit', calories: 130, proteins: 2.7, carbs: 28, fats: 0.3 },
+        { name: 'Brocoli cuit', calories: 35, proteins: 2.4, carbs: 7, fats: 0.4 }
+    ];
     
-    try {
-        const response = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10&countries_tags=fr`);
-        
-        if (!response.ok) {
-            throw new Error('Erreur de recherche');
-        }
-        
-        const data = await response.json();
-        
-        if (data.products && data.products.length > 0) {
-            displaySearchResults(data.products);
-        } else {
-            showSuccess('Aucun produit trouvé');
-            document.getElementById('searchResults').style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Search error:', error);
-        showSuccess('Erreur lors de la recherche');
-    }
+    displaySearchResults(mockResults);
+    showSuccess('Recherche terminée');
 }
 
-function displaySearchResults(products) {
+function displaySearchResults(results) {
     const resultsDiv = document.getElementById('searchResults');
     const resultsList = document.getElementById('searchResultsList');
     
-    resultsList.innerHTML = products.map(product => {
-        const name = product.product_name || product.product_name_fr || 'Produit sans nom';
-        const brand = product.brands || '';
-        const calories = product.nutriments?.['energy-kcal_100g'] || 0;
-        const proteins = product.nutriments?.proteins_100g || 0;
-        const carbs = product.nutriments?.carbohydrates_100g || 0;
-        const fats = product.nutriments?.fat_100g || 0;
-        
-        return `
-            <div class="food-result-item" onclick="addProductToMeal('${escapeHtml(name)}', '${escapeHtml(brand)}', ${calories}, ${proteins}, ${carbs}, ${fats})">
-                <div class="food-info">
-                    <h4>${escapeHtml(name)}</h4>
-                    <p class="food-brand">${escapeHtml(brand)}</p>
-                    <p>Pour 100g: ${calories} kcal | P: ${proteins}g | G: ${carbs}g | L: ${fats}g</p>
-                </div>
-                <button class="btn btn-success" style="padding: 5px 15px;">
-                    + Ajouter
-                </button>
-            </div>
+    resultsList.innerHTML = '';
+    
+    results.forEach(food => {
+        const resultItem = document.createElement('div');
+        resultItem.style.cssText = 'padding: 15px; background: white; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #e0e0e0;';
+        resultItem.innerHTML = `
+            <h4>${food.name}</h4>
+            <p>Pour 100g: ${food.calories} kcal | P: ${food.proteins}g | G: ${food.carbs}g | L: ${food.fats}g</p>
         `;
-    }).join('');
+        resultItem.onclick = () => addFood(food);
+        resultsList.appendChild(resultItem);
+    });
     
     resultsDiv.style.display = 'block';
 }
 
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-function addProductToMeal(name, brand, calories, proteins, carbs, fats) {
+function addFood(food) {
     const quantity = prompt('Quantité en grammes:', '100');
     if (!quantity || isNaN(quantity)) return;
     
     const factor = parseFloat(quantity) / 100;
     
-    const meal = {
-        name: `${name} ${brand ? '(' + brand + ')' : ''}`.trim(),
-        quantity: parseFloat(quantity),
-        calories: Math.round(calories * factor),
-        proteins: Math.round(proteins * factor * 10) / 10,
-        carbs: Math.round(carbs * factor * 10) / 10,
-        fats: Math.round(fats * factor * 10) / 10,
-        time: new Date().toLocaleTimeString(),
-        type: currentMealType
-    };
+    // Ajouter aux totaux du jour
+    appState.nutrition.calories += Math.round(food.calories * factor);
+    appState.nutrition.proteins += Math.round(food.proteins * factor);
+    appState.nutrition.carbs += Math.round(food.carbs * factor);
+    appState.nutrition.fats += Math.round(food.fats * factor);
     
-    appState.nutrition.calories += meal.calories;
-    appState.nutrition.proteins += meal.proteins;
-    appState.nutrition.carbs += meal.carbs;
-    appState.nutrition.fats += meal.fats;
-    appState.meals.push(meal);
+    // Ajouter à la liste des repas
+    appState.meals.push({
+        name: food.name,
+        quantity: parseFloat(quantity),
+        calories: Math.round(food.calories * factor),
+        proteins: Math.round(food.proteins * factor),
+        carbs: Math.round(food.carbs * factor),
+        fats: Math.round(food.fats * factor),
+        time: new Date().toLocaleTimeString()
+    });
     
     updateDashboard();
-    saveToCloud();
-    showSuccess(`${name} ajouté !`);
+    updateTodayMeals();
+    saveState();
     
-    document.getElementById('searchResults').style.display = 'none';
-    document.getElementById('foodSearchInput').value = '';
+    showSuccess(`${food.name} ajouté !`);
 }
 
-// Barcode Scanner Functions
-async function searchByBarcode() {
-    const barcode = document.getElementById('barcodeInput').value.trim();
-    if (!barcode) {
-        alert('Veuillez entrer un code-barres');
-        return;
-    }
+function updateTodayMeals() {
+    const mealsDiv = document.getElementById('todayMeals');
     
-    showSuccess('Recherche du produit...');
-    
-    try {
-        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+    if (appState.meals.length === 0) {
+        mealsDiv.innerHTML = `
+            <p>Aucun repas ajouté</p>
+            <button class="btn btn-primary" onclick="showPage('foods')">
+                Ajouter un repas
+            </button>
+        `;
+    } else {
+        let html = '<div style="max-height: 300px; overflow-y: auto;">';
         
-        if (!response.ok) {
-            throw new Error('Produit non trouvé');
-        }
+        appState.meals.forEach((meal, index) => {
+            html += `
+                <div style="padding: 15px; background: #f5f5f5; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${meal.name}</strong> (${meal.quantity}g)
+                        <br>
+                        <small>${meal.calories} kcal | P: ${meal.proteins}g | G: ${meal.carbs}g | L: ${meal.fats}g</small>
+                        <br>
+                        <small style="color: #666;">${meal.time}</small>
+                    </div>
+                    <button onclick="removeMeal(${index})" style="background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">×</button>
+                </div>
+            `;
+        });
         
-        const data = await response.json();
-        
-        if (data.status === 1 && data.product) {
-            displayBarcodeResult(data.product);
-        } else {
-            showSuccess('Produit non trouvé dans la base de données');
-        }
-    } catch (error) {
-        console.error('Barcode search error:', error);
-        showSuccess('Erreur lors de la recherche du code-barres');
-    }
-}
-
-function displayBarcodeResult(product) {
-    const name = product.product_name || product.product_name_fr || 'Produit sans nom';
-    const brand = product.brands || '';
-    const calories = product.nutriments?.['energy-kcal_100g'] || 0;
-    const proteins = product.nutriments?.proteins_100g || 0;
-    const carbs = product.nutriments?.carbohydrates_100g || 0;
-    const fats = product.nutriments?.fat_100g || 0;
-    
-    const infoDiv = document.getElementById('barcodeProductInfo');
-    infoDiv.innerHTML = `
-        <h4>${escapeHtml(name)}</h4>
-        <p style="color: #666; margin-bottom: 15px;">${escapeHtml(brand)}</p>
-        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
-            <p><strong>Pour 100g :</strong></p>
-            <p>Calories: ${calories} kcal</p>
-            <p>Protéines: ${proteins}g</p>
-            <p>Glucides: ${carbs}g</p>
-            <p>Lipides: ${fats}g</p>
-        </div>
-    `;
-    
-    window.currentBarcodeProduct = {
-        name, brand, calories, proteins, carbs, fats
-    };
-    
-    document.getElementById('barcodeResultModal').classList.add('active');
-}
-
-function addBarcodeProduct() {
-    if (window.currentBarcodeProduct) {
-        const { name, brand, calories, proteins, carbs, fats } = window.currentBarcodeProduct;
-        addProductToMeal(name, brand, calories, proteins, carbs, fats);
-        closeModal('barcodeResultModal');
-        document.getElementById('barcodeInput').value = '';
+        html += '</div>';
+        mealsDiv.innerHTML = html;
     }
 }
 
-// Custom food
+function removeMeal(index) {
+    const meal = appState.meals[index];
+    
+    // Soustraire des totaux
+    appState.nutrition.calories -= meal.calories;
+    appState.nutrition.proteins -= meal.proteins;
+    appState.nutrition.carbs -= meal.carbs;
+    appState.nutrition.fats -= meal.fats;
+    
+    // Supprimer de la liste
+    appState.meals.splice(index, 1);
+    
+    updateDashboard();
+    updateTodayMeals();
+    saveState();
+    
+    showSuccess('Repas supprimé');
+}
+
 function showAddFoodModal() {
     document.getElementById('addFoodModal').classList.add('active');
 }
@@ -784,100 +468,155 @@ function showAddFoodModal() {
 function addCustomFood() {
     const name = document.getElementById('foodName').value;
     const quantity = parseFloat(document.getElementById('foodQuantity').value);
-    const calories = parseFloat(document.getElementById('foodCalories').value) || 0;
-    const proteins = parseFloat(document.getElementById('foodProteins').value) || 0;
-    const carbs = parseFloat(document.getElementById('foodCarbs').value) || 0;
-    const fats = parseFloat(document.getElementById('foodFats').value) || 0;
+    const calories = parseFloat(document.getElementById('foodCalories').value);
+    const proteins = parseFloat(document.getElementById('foodProteins').value);
+    const carbs = parseFloat(document.getElementById('foodCarbs').value);
+    const fats = parseFloat(document.getElementById('foodFats').value);
     
     if (!name || !quantity) {
-        alert('Veuillez remplir au moins le nom et la quantité');
+        showSuccess('Veuillez remplir tous les champs', 'error');
         return;
     }
     
-    const meal = {
-        name,
-        quantity,
-        calories: Math.round(calories),
-        proteins: Math.round(proteins * 10) / 10,
-        carbs: Math.round(carbs * 10) / 10,
-        fats: Math.round(fats * 10) / 10,
-        time: new Date().toLocaleTimeString(),
-        type: currentMealType
+    const food = {
+        name: name,
+        calories: calories || 0,
+        proteins: proteins || 0,
+        carbs: carbs || 0,
+        fats: fats || 0
     };
     
-    appState.nutrition.calories += meal.calories;
-    appState.nutrition.proteins += meal.proteins;
-    appState.nutrition.carbs += meal.carbs;
-    appState.nutrition.fats += meal.fats;
-    appState.meals.push(meal);
+    // Fermer le modal
+    closeModal('addFoodModal');
+    
+    // Ajouter l'aliment avec la quantité spécifiée
+    const factor = quantity / 100;
+    
+    appState.nutrition.calories += Math.round(food.calories * factor);
+    appState.nutrition.proteins += Math.round(food.proteins * factor);
+    appState.nutrition.carbs += Math.round(food.carbs * factor);
+    appState.nutrition.fats += Math.round(food.fats * factor);
+    
+    appState.meals.push({
+        name: food.name,
+        quantity: quantity,
+        calories: Math.round(food.calories * factor),
+        proteins: Math.round(food.proteins * factor),
+        carbs: Math.round(food.carbs * factor),
+        fats: Math.round(food.fats * factor),
+        time: new Date().toLocaleTimeString()
+    });
     
     updateDashboard();
-    closeModal('addFoodModal');
-    saveToCloud();
-    showSuccess(`${name} ajouté !`);
+    updateTodayMeals();
+    saveState();
     
+    // Réinitialiser le formulaire
     document.getElementById('foodName').value = '';
     document.getElementById('foodQuantity').value = '100';
     document.getElementById('foodCalories').value = '';
     document.getElementById('foodProteins').value = '';
     document.getElementById('foodCarbs').value = '';
     document.getElementById('foodFats').value = '';
+    
+    showSuccess(`${name} ajouté !`);
 }
 
-// Chat functionality
+function startBarcodeScanner() {
+    showSuccess('Scanner non disponible dans cette démo', 'error');
+}
+
+function analyzeFood(event) {
+    showSuccess('Analyse photo non disponible dans cette démo', 'error');
+}
+
+// ===================================
+// ANALYTICS
+// ===================================
+
+function addWeightEntry() {
+    const weight = parseFloat(document.getElementById('newWeight').value);
+    
+    if (!weight || isNaN(weight)) {
+        showSuccess('Veuillez entrer un poids valide', 'error');
+        return;
+    }
+    
+    appState.weightHistory.push({
+        date: new Date().toISOString().split('T')[0],
+        weight: weight
+    });
+    
+    // Mettre à jour le poids actuel
+    appState.user.weight = weight;
+    document.getElementById('weight').value = weight;
+    
+    saveState();
+    showSuccess('Poids enregistré !');
+    
+    // Vider le champ
+    document.getElementById('newWeight').value = '';
+}
+
+function exportPDF() {
+    showSuccess('Export PDF en cours de développement', 'error');
+}
+
+function exportCSV() {
+    let csv = 'Date,Repas,Quantité,Calories,Protéines,Glucides,Lipides\n';
+    
+    appState.meals.forEach(meal => {
+        csv += `${new Date().toLocaleDateString()},${meal.name},${meal.quantity}g,${meal.calories},${meal.proteins},${meal.carbs},${meal.fats}\n`;
+    });
+    
+    downloadFile(csv, 'nutrisync_export.csv', 'text/csv');
+    showSuccess('Export CSV réussi !');
+}
+
+function exportJSON() {
+    const data = JSON.stringify(appState, null, 2);
+    downloadFile(data, 'nutrisync_data.json', 'application/json');
+    showSuccess('Export JSON réussi !');
+}
+
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type: type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ===================================
+// CHAT IA
+// ===================================
+
 function sendMessage() {
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     
     if (!message) return;
     
+    // Ajouter le message de l'utilisateur
     addChatMessage(message, 'user');
     input.value = '';
     
+    // Réponse simulée
     setTimeout(() => {
-        const response = generateAIResponse(message);
-        addChatMessage(response, 'ai');
+        const responses = [
+            "D'après votre profil, je recommande d'augmenter votre apport en protéines.",
+            "Pour atteindre votre objectif, maintenez un déficit calorique de 500 kcal/jour.",
+            "N'oubliez pas de boire au moins 2L d'eau par jour !",
+            "Privilégiez les glucides complexes autour de vos entraînements."
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        addChatMessage(randomResponse, 'ai');
     }, 1000);
-}
-
-function generateAIResponse(message) {
-    const lowerMessage = message.toLowerCase();
-    const remainingCalories = appState.nutrition.targetCalories - appState.nutrition.calories;
-    const remainingProteins = appState.nutrition.targetProteins - appState.nutrition.proteins;
-    
-    if (lowerMessage.includes('protéine') || lowerMessage.includes('protein')) {
-        if (remainingProteins > 50) {
-            return `Il vous reste ${remainingProteins}g de protéines à consommer aujourd'hui. Je recommande des sources maigres comme le blanc de poulet (31g/100g), le thon (30g/100g), ou les oeufs (13g/100g).`;
-        } else if (remainingProteins > 0) {
-            return `Vous êtes proche de votre objectif de protéines ! Il vous reste ${remainingProteins}g. Un yaourt grec (10g) ou une poignée d'amandes (6g) pourrait compléter parfaitement.`;
-        } else {
-            return `Excellent ! Vous avez atteint votre objectif de protéines pour aujourd'hui (${appState.nutrition.proteins}g/${appState.nutrition.targetProteins}g).`;
-        }
-    }
-    
-    if (lowerMessage.includes('calorie') || lowerMessage.includes('manger')) {
-        if (remainingCalories > 500) {
-            return `Il vous reste ${remainingCalories} calories à consommer. C'est suffisant pour un repas complet ! Privilégiez un équilibre entre protéines, glucides complexes et bonnes graisses.`;
-        } else if (remainingCalories > 0) {
-            return `Il vous reste ${remainingCalories} calories. Parfait pour une collation équilibrée !`;
-        } else {
-            return `Vous avez atteint votre objectif calorique (${appState.nutrition.calories} kcal).`;
-        }
-    }
-    
-    const responses = [
-        "Pour optimiser votre perte de gras tout en préservant la masse musculaire, maintenez un déficit calorique modéré (300-500 kcal) et consommez au moins 1.8-2.2g de protéines par kg de poids corporel.",
-        "N'oubliez pas l'importance du timing nutritionnel : consommez des protéines et glucides dans les 2h suivant votre entraînement pour optimiser la récupération.",
-        "Les micronutriments sont essentiels ! Assurez-vous de manger une variété de légumes colorés pour couvrir vos besoins en vitamines et minéraux.",
-        "Le sommeil est crucial pour vos objectifs. Visez 7-9h par nuit pour optimiser la récupération musculaire et la régulation hormonale."
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
-}
-
-function askQuestion(question) {
-    document.getElementById('chatInput').value = question;
-    sendMessage();
 }
 
 function addChatMessage(message, sender) {
@@ -886,8 +625,10 @@ function addChatMessage(message, sender) {
     messageDiv.className = `chat-message ${sender}`;
     
     const icon = sender === 'ai' ? '🤖' : '👤';
+    const name = sender === 'ai' ? 'Coach IA' : 'Vous';
+    
     messageDiv.innerHTML = `
-        <p><strong>${icon} ${sender === 'ai' ? 'Coach IA' : 'Vous'}</strong></p>
+        <p><strong>${icon} ${name}</strong></p>
         <p>${message}</p>
     `;
     
@@ -895,123 +636,275 @@ function addChatMessage(message, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Week planning
+function askQuestion(question) {
+    document.getElementById('chatInput').value = question;
+    sendMessage();
+}
+
+// Ajouter l'événement Enter pour le chat
+document.addEventListener('DOMContentLoaded', function() {
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+});
+
+// ===================================
+// PLANNING
+// ===================================
+
 function generateWeekPlan() {
-    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-    const meals = [
-        { type: 'Petit-déjeuner', icon: '🥐' },
-        { type: 'Déjeuner', icon: '🍝' },
-        { type: 'Collation', icon: '🍓' },
-        { type: 'Dîner', icon: '🍖' }
-    ];
+    showSuccess('Génération du planning en cours...');
     
-    const mealSuggestions = {
-        'cut': {
-            'Petit-déjeuner': ['Omelette aux légumes', 'Yaourt grec avec fruits rouges', 'Porridge protéiné'],
-            'Déjeuner': ['Salade de poulet grillé', 'Buddha bowl quinoa', 'Poisson blanc et légumes vapeur'],
-            'Collation': ['Pomme et amandes', 'Cottage cheese', 'Légumes et houmous'],
-            'Dîner': ['Saumon et brocolis', 'Poulet aux épices et salade', 'Tofu sauté aux légumes']
-        },
-        'bulk': {
-            'Petit-déjeuner': ['Pancakes protéinés', 'Bol de granola complet', 'Oeufs et avocat toast'],
-            'Déjeuner': ['Pâtes au poulet', 'Riz et boeuf teriyaki', 'Burger maison avec patates douces'],
-            'Collation': ['Shake protéiné et banane', 'Beurre de cacahuète et pain complet', 'Mix de noix et fruits secs'],
-            'Dîner': ['Steak et pommes de terre', 'Pâtes carbonara allégées', 'Pizza maison protéinée']
-        }
-    };
-    
-    const userGoal = appState.user.goal.includes('bulk') ? 'bulk' : 'cut';
-    const suggestions = mealSuggestions[userGoal] || mealSuggestions['cut'];
-    
-    let planHTML = '<h3 style="margin-bottom: 20px;">📅 Votre planning de la semaine</h3>';
-    planHTML += '<div style="display: grid; gap: 20px;">';
-    
-    days.forEach(day => {
-        planHTML += `
-            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <h4 style="color: #7c3aed; margin-bottom: 15px;">${day}</h4>
-                <div style="display: grid; gap: 10px;">
-        `;
+    // Simuler la génération
+    setTimeout(() => {
+        const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        const meals = ['Petit-déjeuner', 'Déjeuner', 'Collation', 'Dîner'];
         
-        meals.forEach(meal => {
-            const randomMeal = suggestions[meal.type][Math.floor(Math.random() * suggestions[meal.type].length)];
+        let planHTML = '<h3>📅 Votre planning de la semaine</h3>';
+        planHTML += '<div style="display: grid; gap: 20px;">';
+        
+        days.forEach(day => {
             planHTML += `
-                <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 20px;">${meal.icon}</span>
-                    <div style="flex: 1;">
-                        <strong>${meal.type}:</strong><br>
-                        <span style="color: #666;">${randomMeal}</span>
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <h4 style="color: #7c3aed; margin-bottom: 15px;">${day}</h4>
+                    <div style="display: grid; gap: 10px;">
+            `;
+            
+            meals.forEach(meal => {
+                planHTML += `
+                    <div style="background: #f5f5f5; padding: 10px; border-radius: 8px;">
+                        <strong>${meal}:</strong> 
+                        <span style="color: #666;">Repas équilibré généré</span>
+                    </div>
+                `;
+            });
+            
+            planHTML += `
                     </div>
                 </div>
             `;
         });
         
+        planHTML += '</div>';
         planHTML += `
-                </div>
-            </div>
+            <button class="btn btn-primary" style="margin-top: 20px;" onclick="generateShoppingListFromPlan()">
+                🛒 Générer la liste de courses
+            </button>
         `;
+        
+        document.getElementById('weekPlan').innerHTML = planHTML;
+        document.getElementById('weekPlan').style.display = 'block';
+        
+        appState.weekPlan = { generated: true };
+        saveState();
+        showSuccess('Planning généré !');
+    }, 2000);
+}
+
+function generateShoppingListFromPlan() {
+    showPage('shopping');
+    setTimeout(() => generateShoppingList(), 500);
+}
+
+// ===================================
+// LISTE DE COURSES
+// ===================================
+
+function generateShoppingList() {
+    if (!appState.weekPlan) {
+        showSuccess('Créez d\'abord un planning de repas', 'error');
+        return;
+    }
+    
+    showSuccess('Génération de la liste en cours...');
+    
+    // Simuler la génération
+    setTimeout(() => {
+        // Réinitialiser la liste
+        appState.shoppingList = {
+            fresh: [
+                { name: 'Tomates', quantity: 1, unit: 'kg', price: 2.99 },
+                { name: 'Brocoli', quantity: 500, unit: 'g', price: 3.50 },
+                { name: 'Bananes', quantity: 6, unit: 'pcs', price: 2.50 }
+            ],
+            protein: [
+                { name: 'Poulet', quantity: 1.5, unit: 'kg', price: 12.99 },
+                { name: 'Oeufs', quantity: 12, unit: 'pcs', price: 3.99 }
+            ],
+            dairy: [
+                { name: 'Yaourt grec', quantity: 4, unit: 'pcs', price: 4.50 },
+                { name: 'Lait', quantity: 1, unit: 'l', price: 1.59 }
+            ],
+            grains: [
+                { name: 'Riz complet', quantity: 1, unit: 'kg', price: 2.99 },
+                { name: 'Flocons d\'avoine', quantity: 500, unit: 'g', price: 1.99 }
+            ],
+            pantry: [
+                { name: 'Huile d\'olive', quantity: 1, unit: 'l', price: 8.99 }
+            ],
+            other: []
+        };
+        
+        displayShoppingList();
+        document.getElementById('shoppingListContainer').style.display = 'block';
+        document.getElementById('emptyShoppingList').style.display = 'none';
+        
+        saveState();
+        showSuccess('Liste générée !');
+    }, 1500);
+}
+
+function displayShoppingList() {
+    const container = document.getElementById('shoppingListContainer');
+    container.innerHTML = '';
+    
+    const categories = {
+        fresh: '🥬 Fruits & Légumes',
+        protein: '🥩 Protéines',
+        dairy: '🥛 Produits Laitiers',
+        grains: '🌾 Féculents',
+        pantry: '🥫 Épicerie',
+        other: '📦 Autres'
+    };
+    
+    let totalPrice = 0;
+    let totalItems = 0;
+    
+    Object.entries(appState.shoppingList).forEach(([category, items]) => {
+        if (items.length > 0) {
+            const section = document.createElement('div');
+            section.style.cssText = 'background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);';
+            
+            section.innerHTML = `<h3 style="margin-bottom: 15px;">${categories[category]}</h3>`;
+            
+            items.forEach((item, index) => {
+                totalPrice += item.price || 0;
+                totalItems++;
+                
+                section.innerHTML += `
+                    <div style="display: flex; align-items: center; padding: 10px; background: #f5f5f5; margin-bottom: 10px; border-radius: 8px;">
+                        <input type="checkbox" style="margin-right: 15px;">
+                        <div style="flex: 1;">
+                            <strong>${item.name}</strong>
+                            <small style="color: #666;"> - ${item.quantity} ${item.unit}</small>
+                        </div>
+                        <span style="color: #4caf50; font-weight: bold;">${(item.price || 0).toFixed(2)}€</span>
+                    </div>
+                `;
+            });
+            
+            container.appendChild(section);
+        }
     });
     
-    planHTML += '</div>';
+    // Ajouter le total
+    const totalSection = document.createElement('div');
+    totalSection.style.cssText = 'background: #7c3aed; color: white; padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center;';
+    totalSection.innerHTML = `
+        <h3>Total estimé: ${totalPrice.toFixed(2)}€</h3>
+        <p>${totalItems} articles</p>
+    `;
+    container.appendChild(totalSection);
     
-    document.getElementById('weekPlan').innerHTML = planHTML;
-    document.getElementById('weekPlan').style.display = 'block';
-    
-    saveToCloud();
-    showSuccess('Planning de la semaine généré !');
+    // Ajouter les boutons d'action
+    const actionsSection = document.createElement('div');
+    actionsSection.style.cssText = 'display: flex; gap: 10px; margin-top: 20px;';
+    actionsSection.innerHTML = `
+        <button class="btn btn-primary" onclick="exportShoppingList()">📱 Exporter</button>
+        <button class="btn btn-success" onclick="printShoppingList()">🖨️ Imprimer</button>
+    `;
+    container.appendChild(actionsSection);
 }
 
-// Analytics
-function updateAnalytics() {
-    updateElement('totalMeals', appState.meals.length);
-    updateElement('avgCalories', appState.nutrition.calories);
-    updateElement('streak', 0);
+function showAddItemModal() {
+    document.getElementById('addItemModal').classList.add('active');
 }
 
-// Settings
-function updateGlassSize() {
-    const newSize = parseInt(document.getElementById('glassSize').value);
-    appState.settings.glassSize = newSize;
-    appState.hydration.glassVolume = newSize;
-    appState.hydration.targetGlasses = Math.ceil(appState.hydration.dailyGoal / newSize);
+function addShoppingItem() {
+    const name = document.getElementById('itemName').value;
+    const quantity = parseFloat(document.getElementById('itemQuantity').value);
+    const unit = document.getElementById('itemUnit').value;
+    const category = document.getElementById('itemCategory').value;
     
-    initializeHydration();
-    updateDashboard();
-    saveToCloud();
-    showSuccess('Taille des verres mise à jour');
+    if (!name || !quantity) {
+        showSuccess('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    appState.shoppingList[category].push({
+        name: name,
+        quantity: quantity,
+        unit: unit,
+        price: 0
+    });
+    
+    displayShoppingList();
+    document.getElementById('shoppingListContainer').style.display = 'block';
+    document.getElementById('emptyShoppingList').style.display = 'none';
+    
+    closeModal('addItemModal');
+    
+    // Réinitialiser le formulaire
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemQuantity').value = '1';
+    
+    saveState();
+    showSuccess('Article ajouté !');
 }
 
-function updateHydrationGoal() {
-    const newGoal = parseInt(document.getElementById('hydrationGoal').value);
-    appState.settings.hydrationGoal = newGoal;
-    appState.hydration.dailyGoal = newGoal;
-    appState.hydration.targetGlasses = Math.ceil(newGoal / appState.hydration.glassVolume);
+function exportShoppingList() {
+    let text = '🛒 LISTE DE COURSES\n\n';
     
-    initializeHydration();
-    updateDashboard();
-    saveToCloud();
-    showSuccess('Objectif d\'hydratation mis à jour');
+    const categories = {
+        fresh: '🥬 Fruits & Légumes',
+        protein: '🥩 Protéines',
+        dairy: '🥛 Produits Laitiers',
+        grains: '🌾 Féculents',
+        pantry: '🥫 Épicerie',
+        other: '📦 Autres'
+    };
+    
+    Object.entries(appState.shoppingList).forEach(([category, items]) => {
+        if (items.length > 0) {
+            text += `${categories[category]}\n`;
+            items.forEach(item => {
+                text += `☐ ${item.name} - ${item.quantity} ${item.unit}\n`;
+            });
+            text += '\n';
+        }
+    });
+    
+    downloadFile(text, 'liste_courses.txt', 'text/plain');
+    showSuccess('Liste exportée !');
 }
+
+function printShoppingList() {
+    window.print();
+}
+
+// ===================================
+// PARAMÈTRES
+// ===================================
 
 function saveSettings() {
     const openaiKey = document.getElementById('openaiKey').value;
+    
     if (openaiKey) {
         appState.settings.apiKeys.openai = openaiKey;
     }
     
-    saveToLocalStorage();
+    saveState();
     showSuccess('Paramètres sauvegardés !');
 }
 
-// Data export/import
 function exportData() {
-    const dataStr = JSON.stringify(appState, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `nutrisync-export-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
+    const data = JSON.stringify(appState, null, 2);
+    downloadFile(data, 'nutrisync_backup.json', 'application/json');
     showSuccess('Données exportées !');
 }
 
@@ -1019,87 +912,96 @@ function importData() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
+    
     input.onchange = (e) => {
         const file = e.target.files[0];
+        if (!file) return;
+        
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
-                const importedData = JSON.parse(event.target.result);
-                if (confirm('Cela remplacera toutes vos données actuelles. Continuer ?')) {
-                    appState = importedData;
-                    updateAllUI();
-                    saveToCloud();
-                    showSuccess('Données importées avec succès !');
-                }
+                const data = JSON.parse(event.target.result);
+                appState = data;
+                saveState();
+                location.reload();
             } catch (error) {
-                alert('Erreur lors de l\'import des données');
+                showSuccess('Erreur lors de l\'import', 'error');
             }
         };
         reader.readAsText(file);
     };
+    
     input.click();
 }
 
-function resetData() {
-    if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes vos données ?')) {
-        const currentSyncCode = appState.syncCode;
-        appState = {
-            syncCode: currentSyncCode,
-            lastSync: null,
-            user: {
-                gender: 'homme',
-                age: 31,
-                height: 180,
-                weight: 96,
-                goal: 'cut',
-                activity: 'light',
-                proteinPercent: 30,
-                fatPercent: 25,
-                carbPercent: 45
-            },
-            nutrition: {
-                calories: 0,
-                proteins: 0,
-                carbs: 0,
-                fats: 0,
-                targetCalories: 1836,
-                targetProteins: 138,
-                targetCarbs: 206,
-                targetFats: 51
-            },
-            hydration: {
-                glasses: 0,
-                targetGlasses: 8,
-                glassVolume: 25,
-                dailyGoal: 200
-            },
-            meals: [],
-            currentMealType: 'breakfast',
-            settings: {
-                glassSize: 25,
-                hydrationGoal: 200,
-                apiKeys: {}
-            }
-        };
-        
-        updateAllUI();
-        saveToCloud();
-        showSuccess('Données réinitialisées !');
+function resetApp() {
+    if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
+        localStorage.clear();
+        location.reload();
     }
 }
 
-// Modal functions
+// ===================================
+// UTILITAIRES
+// ===================================
+
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
 
-// Success message
-function showSuccess(message) {
+function showSuccess(message, type = 'success') {
     const successEl = document.getElementById('successMessage');
     successEl.textContent = message;
+    
+    // Définir la couleur selon le type
+    if (type === 'error') {
+        successEl.style.background = '#f44336';
+    } else {
+        successEl.style.background = '#4caf50';
+    }
+    
     successEl.classList.add('show');
     
     setTimeout(() => {
         successEl.classList.remove('show');
     }, 3000);
+}
+
+// ===================================
+// SAUVEGARDE ET CHARGEMENT
+// ===================================
+
+function saveState() {
+    try {
+        localStorage.setItem('nutriSyncState', JSON.stringify(appState));
+    } catch (error) {
+        console.error('Erreur de sauvegarde:', error);
+    }
+}
+
+function loadState() {
+    try {
+        const savedState = localStorage.getItem('nutriSyncState');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            appState = { ...appState, ...state };
+            
+            // Mettre à jour l'UI avec les données chargées
+            if (appState.user) {
+                document.getElementById('gender').value = appState.user.gender || 'homme';
+                document.getElementById('age').value = appState.user.age || 31;
+                document.getElementById('height').value = appState.user.height || 180;
+                document.getElementById('weight').value = appState.user.weight || 96;
+                document.getElementById('goal').value = appState.user.goal || 'cut';
+                document.getElementById('activity').value = appState.user.activity || 'light';
+                document.getElementById('proteinSlider').value = appState.user.proteinPercent || 30;
+                document.getElementById('fatSlider').value = appState.user.fatPercent || 25;
+            }
+            
+            updateMacros();
+            updateTodayMeals();
+        }
+    } catch (error) {
+        console.error('Erreur de chargement:', error);
+    }
 }
